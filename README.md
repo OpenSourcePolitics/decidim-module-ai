@@ -38,6 +38,53 @@ Add the queue name to `config/sidekiq.yml` file:
 # The other yaml entries
 ```
 
+## Configure third-party service
+
+To use the third-party service, you need to add the following configuration to your `config/initilizers/decidim_ai.rb` file:
+
+```ruby
+
+# frozen_string_literal: true
+
+if Decidim.module_installed?(:ai)
+  Decidim::Ai::SpamDetection.user_analyzers = [
+    {
+      name: :bayes,
+      strategy: Decidim::Ai::SpamDetection::Strategy::Scaleway,
+      options: {
+        model: Rails.application.secrets.ai.model,
+        endpoint: Rails.application.secrets.ai.endpoint,
+        secret: Rails.application.secrets.ai.secret,
+        max_tokens: Rails.application.secrets.ai.max_tokens,
+        temperature: Rails.application.secrets.ai.temperature,
+        top_p: Rails.application.secrets.ai.top_p,
+        presence_penalty: Rails.application.secrets.ai.presence_penalty,
+        stream: Rails.application.secrets.ai.stream,
+        system_message: Rails.application.secrets.ai.system_message
+      }
+    }
+  ]
+end
+```
+
+Add secrets to your `config/secrets.yml` file:
+
+```yaml
+
+default: &default
+  decidim:
+      ai:
+        model: ENV.fetch("SCW_AI_MODEL", "deepseek-r1-distill-llama-70b")
+        endpoint: ENV.fetch("SCW_AI_ENDPOINT")
+        secret: ENV.fetch("SCW_SECRET")
+        max_tokens: ENV.fetch("SCW_MAX_TOKENS", "100")&.to_i
+        temperature: ENV.fetch("SCW_MAX_TEMPERATURE", "0.7")&.to_f
+        top_p: ENV.fetch("SCW_TOP_P", "1")&.to_i
+        presence_penalty: ENV.fetch("SCW_PRESENCE_PENALTY", "0")&.to_i
+        stream: ENV.fetch("SCW_STREAM", "false") == "true"
+        system_message: ENV.fetch("SCW_SYSTEM_MESSAGE", "You are an expert content moderator for participatory democracy platforms like Decidim. Your task is to classify user-submitted content in any language as either legitimate civic participation or spam.")
+```
+
 ## Contributing
 
 See [Decidim](https://github.com/decidim/decidim).

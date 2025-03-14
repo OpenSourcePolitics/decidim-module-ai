@@ -4,7 +4,8 @@ module Decidim
   module Ai
     module SpamDetection
       module Strategy
-        # Example third-party strategy
+        # Scaleway third-party strategy
+        # doc: https://www.scaleway.com/en/docs/managed-inference/quickstart/
         class Scaleway < ThirdParty
           def third_party_content(body)
             return [] if body.blank?
