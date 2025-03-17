@@ -30,7 +30,7 @@ module Decidim
             body = res.body
 
             system_log("Received response from third party service: #{body}")
-            raise InvalidEntity, res.error unless res.is_a?(Net::HTTPSuccess)
+            raise InvalidEntity, res unless res.is_a?(Net::HTTPSuccess)
 
             content = third_party_content(body)
             raise InvalidOutputFormat, "Third party service response isn't valid JSON" unless valid_output_format?(content)
@@ -39,7 +39,7 @@ module Decidim
             system_log("Spam : #{score}.")
             score
           rescue InvalidEntity, InvalidOutputFormat => e
-            system_log(e.message, level: :error)
+            system_log(e, level: :error)
             score
           end
 
