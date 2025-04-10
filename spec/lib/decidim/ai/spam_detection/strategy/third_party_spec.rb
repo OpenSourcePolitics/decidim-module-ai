@@ -100,7 +100,6 @@ describe Decidim::Ai::SpamDetection::Strategy::ThirdParty do
     before do
       allow(URI).to receive(:parse).and_return(uri_double)
       allow(Net::HTTP).to receive(:new).and_return(http_double)
-      # allow(http_double).to receive(:use_ssl=)
       allow(http_double).to receive(:post).and_return(double("Net::HTTPResponse", body: '{"category": "NOT_SPAM"}'))
     end
 

@@ -26,7 +26,7 @@ module Decidim
 
           def classify(content)
             system_log("Starting classification...")
-            res = request(content)
+            res = third_party_request(content)
             body = res.body
 
             system_log("Received response from third party service: #{body}")
@@ -43,7 +43,7 @@ module Decidim
             score
           end
 
-          def request(content)
+          def third_party_request(content)
             uri = URI(@endpoint)
             payload = payload(content).to_json
             system_log("Sending request to third party service: #{payload}")
