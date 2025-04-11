@@ -21,6 +21,11 @@ describe Decidim::Ai::SpamDetection::Strategy::ThirdParty do
   end
   let(:content) { "Test contribution input." }
 
+  before do
+    stub_request(:post, "https://example.com/api")
+      .to_return(status: 200, body: "", headers: {})
+  end
+
   describe "#initialize" do
     it "initializes with options" do
       expect(strategy.instance_variable_get(:@endpoint)).to eq(endpoint)
@@ -105,7 +110,7 @@ describe Decidim::Ai::SpamDetection::Strategy::ThirdParty do
 
     it "sends a request to the third-party service" do
       expect(http_double).to receive(:post).with("/api", anything, anything)
-      strategy.request(content)
+      strategy.third_party_request(content)
     end
   end
 

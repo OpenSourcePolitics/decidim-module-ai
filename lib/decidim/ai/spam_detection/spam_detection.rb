@@ -6,6 +6,7 @@ module Decidim
       include ActiveSupport::Configurable
 
       autoload :Service, "decidim/ai/spam_detection/service"
+      autoload :ThirdPartyService, "decidim/ai/spam_detection/third_party_service"
 
       module Resource
         autoload :Base, "decidim/ai/spam_detection/resource/base"

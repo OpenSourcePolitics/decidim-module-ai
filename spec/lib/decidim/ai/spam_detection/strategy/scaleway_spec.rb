@@ -6,17 +6,11 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
   let(:strategy) { described_class.new(options) }
   let(:endpoint) { "https://example.com/api" }
   let(:secret) { "secret_key" }
+  let(:klass) { "Decidim::Proposals::Proposal" }
   let(:options) do
     {
       endpoint:,
-      secret:,
-      model: "model_name",
-      system_message: "System message",
-      max_tokens: 100,
-      temperature: 0.7,
-      top_p: 0.9,
-      presence_penalty: 0,
-      stream: false
+      secret:
     }
   end
 
@@ -69,14 +63,19 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
   end
 
   describe "#classify" do
-    let(:response_double) { double("Net::HTTPResponse", body: '{"choices": [{"message": {"content": "NOT_SPAM"}}]}', is_a?: true) }
+    let(:response_double) { double(Net::HTTPResponse, body: '{"choices": [{"message": {"content": "NOT_SPAM"}}]}', is_a?: true, error: "Error message") }
+    let(:uri_double) { double(URI, host: "example.com", port: 443, path: "/api", method: :POST) }
+    let(:http_double) { double(Net::HTTP, :use_ssl= => true) }
 
     before do
+      allow(URI).to receive(:parse).and_return(uri_double)
+      allow(Net::HTTP).to receive(:new).and_return(http_double)
+      allow(http_double).to receive(:post).and_return(double(Net::HTTPResponse, code: Net::HTTPSuccess, body: '{"category": "NOT_SPAM"}'))
       allow(strategy).to receive(:request).and_return(response_double)
     end
 
     it "classifies content as not spam" do
-      expect(strategy.classify("Test content")).to eq(0)
+      expect(strategy.classify("Test content", klass)).to eq(0)
     end
 
     context "when response is invalid" do
@@ -86,7 +85,7 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
       end
 
       it "raises InvalidEntity error" do
-        expect { strategy.classify("Test content") }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidEntity)
+        expect { strategy.classify("Test content", klass) }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidEntity)
         expect(strategy.instance_variable_get(:@score)).to eq(0)
       end
     end
@@ -95,9 +94,28 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
       before { allow(strategy).to receive(:valid_output_format?).and_return(false) }
 
       it "raises InvalidOutputFormat error" do
-        expect { strategy.classify("Test content") }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidOutputFormat)
+        expect { strategy.classify("Test content", klass) }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidOutputFormat)
         expect(strategy.instance_variable_get(:@score)).to eq(0)
       end
+    end
+  end
+
+  describe "#headers" do
+    it "returns the correct headers" do
+      expect(strategy.headers).to eq(
+        "X-Auth-Token" => "secret_key",
+        "Content-Type" => "application/json",
+        "Accept" => "application/json"
+      )
+    end
+  end
+
+  describe "#payload" do
+    it "returns the correct payload" do
+      expect(strategy.payload("Test content", "Decidim::Proposals::Proposal")).to eq({
+                                                                                       text: "Test content",
+                                                                                       type: "Decidim::Proposals::Proposal"
+                                                                                     })
     end
   end
 end
