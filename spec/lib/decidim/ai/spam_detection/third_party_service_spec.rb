@@ -35,10 +35,10 @@ describe Decidim::Ai::SpamDetection::ThirdPartyService do
 
   describe "classify" do
     it "classifies using all strategies" do
-      expect(registry.for(:base)).to receive(:classify).with("text", "Decidim::Proposals::Proposal")
-      expect(registry.for(:dummy)).to receive(:classify).with("text", "Decidim::Proposals::Proposal")
+      expect(registry.for(:base)).to receive(:classify).with("text", "decidim.example.org", "Decidim::Proposals::Proposal")
+      expect(registry.for(:dummy)).to receive(:classify).with("text", "decidim.example.org", "Decidim::Proposals::Proposal")
 
-      subject.classify("text", "Decidim::Proposals::Proposal")
+      subject.classify("text", "decidim.example.org", "Decidim::Proposals::Proposal")
     end
   end
 

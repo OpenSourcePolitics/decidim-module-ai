@@ -9,11 +9,12 @@ module Decidim
         class Scaleway < ThirdParty
           # classify calls the third party AI system to classify content
           # @param content [String] Content to classify
+          # @param organization_host [String] Decidim host
           # @param klass [String] Stringified klass of reportable
           # @return Integer
-          def classify(content, klass)
+          def classify(content, organization_host, klass)
             system_log("Starting classification...")
-            res = third_party_request(content, klass)
+            res = third_party_request(content, organization_host, klass)
             body = res.body
 
             system_log("Received response from third party service: #{body}")
@@ -30,13 +31,14 @@ module Decidim
             score
           end
 
-          def third_party_request(content, klass)
+          def third_party_request(content, organization_host, klass)
             uri = URI(@endpoint)
             payload = payload(content, klass).to_json
             system_log("Sending request to third party service: #{payload}")
             http = Net::HTTP.new(uri.host, uri.port)
             http.use_ssl = true
-            http.post(uri.path, payload, headers)
+            http.headers = headers(organization_host)
+            http.post(uri.path, payload)
           end
 
           def third_party_content(body)
@@ -53,11 +55,13 @@ module Decidim
             }
           end
 
-          def headers
+          def headers(organization_host)
             @headers ||= {
               "X-Auth-Token" => @secret,
               "Content-Type" => "application/json",
-              "Accept" => "application/json"
+              "Accept" => "application/json",
+              "Host" => organization_host,
+              "Decidim" => organization_host
             }
           end
         end

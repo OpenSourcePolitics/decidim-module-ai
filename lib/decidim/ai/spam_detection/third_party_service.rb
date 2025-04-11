@@ -8,12 +8,12 @@ module Decidim
         # @param text [String] Content to classify
         # @param klass [String] Stringified klass of reportable
         # @return nil
-        def classify(text, klass = "")
+        def classify(text, organization_host = "", klass = "")
           text = formatter.cleanup(text)
           return if text.blank?
 
           @registry.each do |strategy|
-            strategy.classify(text, klass)
+            strategy.classify(text, organization_host, klass)
           end
         end
       end
