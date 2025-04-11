@@ -49,8 +49,8 @@ To use the third-party service, you need to add the following configuration to y
 if Decidim.module_installed?(:ai)
   Decidim::Ai::SpamDetection.user_analyzers = [
     {
-      name: :bayes,
-      strategy: Decidim::Ai::SpamDetection::Strategy::Scaleway,
+      name: :third_party,
+      strategy: Decidim::Ai::SpamDetection::Strategy::ThirdParty,
       options: {
         model: Rails.application.secrets.ai.model,
         endpoint: Rails.application.secrets.ai.endpoint,
@@ -74,15 +74,15 @@ Add secrets to your `config/secrets.yml` file:
 default: &default
   decidim:
       ai:
-        model: ENV.fetch("SCW_AI_MODEL", "deepseek-r1-distill-llama-70b")
-        endpoint: ENV.fetch("SCW_AI_ENDPOINT")
-        secret: ENV.fetch("SCW_SECRET")
-        max_tokens: ENV.fetch("SCW_MAX_TOKENS", "100")&.to_i
-        temperature: ENV.fetch("SCW_MAX_TEMPERATURE", "0.7")&.to_f
-        top_p: ENV.fetch("SCW_TOP_P", "1")&.to_i
-        presence_penalty: ENV.fetch("SCW_PRESENCE_PENALTY", "0")&.to_i
-        stream: ENV.fetch("SCW_STREAM", "false") == "true"
-        system_message: ENV.fetch("SCW_SYSTEM_MESSAGE", "You are an expert content moderator for participatory democracy platforms like Decidim. Your task is to classify user-submitted content in any language as either legitimate civic participation or spam.")
+        model: ENV.fetch("DECIDIM_AI_MODEL", "deepseek-r1-distill-llama-70b")
+        endpoint: ENV.fetch("DECIDIM_AI_ENDPOINT")
+        secret: ENV.fetch("DECIDIM_AI_SECRET")
+        max_tokens: ENV.fetch("DECIDIM_AI_MAX_TOKENS", "100")&.to_i
+        temperature: ENV.fetch("DECIDIM_AI_MAX_TEMPERATURE", "0.7")&.to_f
+        top_p: ENV.fetch("DECIDIM_AI_TOP_P", "1")&.to_i
+        presence_penalty: ENV.fetch("DECIDIM_AI_PRESENCE_PENALTY", "0")&.to_i
+        stream: ENV.fetch("DECIDIM_AI_STREAM", "false") == "true"
+        system_message: ENV.fetch("DECIDIM_AI_SYSTEM_MESSAGE", "You are an expert content moderator for participatory democracy platforms like Decidim. Your task is to classify user-submitted content in any language as either legitimate civic participation or spam.")
 ```
 
 ## Contributing
