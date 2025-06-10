@@ -63,14 +63,14 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
   end
 
   describe "#classify" do
-    let(:response_double) { double(Net::HTTPResponse, body: '{"choices": [{"message": {"content": "NOT_SPAM"}}]}', is_a?: true, error: "Error message") }
+    let(:response_double) { double(Net::HTTPResponse, body: '{"choices": [{"message": {"spam": "NOT_SPAM"}}]}', is_a?: true, error: "Error message") }
     let(:uri_double) { double(URI, host: "example.com", port: 443, path: "/api", method: :POST) }
     let(:http_double) { double(Net::HTTP, :use_ssl= => true) }
 
     before do
       allow(URI).to receive(:parse).and_return(uri_double)
       allow(Net::HTTP).to receive(:new).and_return(http_double)
-      allow(http_double).to receive(:post).and_return(double(Net::HTTPResponse, code: Net::HTTPSuccess, body: '{"choices": [{"message": {"content": "NOT_SPAM"}}]}'))
+      allow(http_double).to receive(:post).and_return(double(Net::HTTPResponse, code: Net::HTTPSuccess, body: '{"choices": [{"message": {"spam": "NOT_SPAM"}}]}'))
       allow(http_double).to receive(:headers=).and_return({ "Accept" => "application/json", "Content-Type" => "application/json", "Decidim" => "decidim.example.org", "Host" => "decidim.example.org", "X-Auth-Token" => "secret_key" })
       allow(strategy).to receive(:request).and_return(response_double)
     end

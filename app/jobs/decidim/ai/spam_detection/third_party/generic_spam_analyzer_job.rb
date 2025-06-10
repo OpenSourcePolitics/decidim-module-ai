@@ -21,6 +21,8 @@ module Decidim
             return unless overall_score >= Decidim::Ai::SpamDetection.resource_score_threshold
 
             Decidim::CreateReport.call(form, reportable)
+          rescue StandardError => e
+            Rails.logger.error "Error in GenericSpamAnalyzerJob: #{e.message}"
           end
         end
       end

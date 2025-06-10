@@ -13,18 +13,17 @@ module Decidim
           # @param klass [String] Stringified klass of reportable
           # @return Integer
           def classify(content, organization_host, klass)
-            system_log("Starting classification...")
+            system_log("Starting classification with Scaleway's strategy...")
             res = third_party_request(content, organization_host, klass)
-            body = res.body
+            body = JSON.parse(res.body)
 
             system_log("Received response from third party service: #{body}")
-            raise InvalidEntity, res.error unless res.code == Net::HTTPSuccess
+            raise InvalidEntity, body unless res.is_a? Net::HTTPSuccess
 
             content = third_party_content(body)
             raise InvalidOutputFormat, "Third party service response isn't valid JSON" unless valid_output_format?(content)
 
             @category = content.downcase
-            system_log(score == 1 ? "SPAM" : "NOT_SPAM")
             score
           rescue InvalidEntity, InvalidOutputFormat => e
             system_log(e.message, level: :error)
@@ -32,36 +31,38 @@ module Decidim
           end
 
           def third_party_request(content, organization_host, klass)
+            # TODO: Prevent undefined endpoint
             uri = URI(@endpoint)
+
             payload = payload(content, klass).to_json
             system_log("Sending request to third party service: #{payload}")
             http = Net::HTTP.new(uri.host, uri.port)
             http.use_ssl = true
-            http.headers = headers(organization_host)
-            http.post(uri.path, payload)
+            request = Net::HTTP::Post.new(uri.to_s, "Content-Type" => "application/json", "Accept" => "application/json")
+            request["X-Auth-Token"] = @secret
+            request["X-Host"] = organization_host
+            request["X-Decidim-Host"] = organization_host
+            request["X-Decidim"] = organization_host
+            request["Host"] = organization_host
+
+            request.body = payload
+
+            http.request(request)
+          rescue StandardError => e
+            system_log("Error during request to Scaleway service: #{e.message}", level: :error)
+            { "error" => "Error during request to third party service" }
           end
 
           def third_party_content(body)
-            return [] if body.blank?
+            return "" if body.blank?
 
-            choices = JSON.parse(body)&.fetch("choices", [])
-            choices.first&.dig("message", "content")
+            body.fetch("spam", "")
           end
 
           def payload(content, klass)
             {
               text: content,
               type: klass
-            }
-          end
-
-          def headers(organization_host)
-            @headers ||= {
-              "X-Auth-Token" => @secret,
-              "Content-Type" => "application/json",
-              "Accept" => "application/json",
-              "Host" => organization_host,
-              "Decidim" => organization_host
             }
           end
         end

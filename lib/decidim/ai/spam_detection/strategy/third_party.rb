@@ -13,8 +13,8 @@ module Decidim
 
           def initialize(options = {})
             super
-            @endpoint = options[:endpoint]
-            @secret = options[:secret]
+            @endpoint = Rails.application.secrets.dig(:decidim, :ai, :endpoint)
+            @secret = Rails.application.secrets.dig(:decidim, :ai, :secret)
             @options = options
           end
 
@@ -82,10 +82,15 @@ module Decidim
           end
 
           # This method should be implemented by the subclass depending on the third-party service
-          def third_party_content(body) end
+          def third_party_content(body)
+            return [] if body.blank?
+
+            choices = JSON.parse(body)&.fetch("choices", [])
+            choices.first&.dig("message", "content")
+          end
 
           def score
-            @score ||= @category.presence == "spam" ? 1 : 0
+            @category.presence == "spam" ? 1 : 0
           end
 
           private
