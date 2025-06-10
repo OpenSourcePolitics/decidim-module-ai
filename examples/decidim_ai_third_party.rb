@@ -26,14 +26,22 @@ if Decidim.module_installed?(:ai)
                                                  models
                                                end
 
-  # Configuring Scaleway strategy
+  # Configuring Third Party strategy
   analyzers = [
     {
-      name: :scaleway,
-      strategy: Decidim::Ai::SpamDetection::Strategy::Scaleway,
+      name: :third_party,
+      strategy: Decidim::Ai::SpamDetection::Strategy::ThirdParty,
       options: {
+        model: Rails.application.secrets.dig(:decidim, :ai, :model),
         endpoint: Rails.application.secrets.dig(:decidim, :ai, :endpoint),
-        secret: Rails.application.secrets.dig(:decidim, :ai, :secret)
+        secret: Rails.application.secrets.dig(:decidim, :ai, :secret),
+        max_tokens: Rails.application.secrets.dig(:decidim, :ai, :max_tokens),
+        temperature: Rails.application.secrets.dig(:decidim, :ai, :temperature),
+        top_p: Rails.application.secrets.dig(:decidim, :ai, :top_p),
+        presence_penalty: Rails.application.secrets.dig(:decidim, :ai, :presence_penalty),
+        stream: Rails.application.secrets.dig(:decidim, :ai, :stream),
+        system_message: Rails.application.secrets.dig(:decidim, :ai, :system_message),
+        reporting_user_email: Rails.application.secrets.dig(:decidim, :ai, :reporting_user_email)
       }
     }
   ]
