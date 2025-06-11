@@ -22,6 +22,7 @@ module Decidim
 
             Decidim::CreateReport.call(form, reportable)
           rescue StandardError => e
+            Rails.logger.error e.backtrace.first(15).join("\n")
             Rails.logger.error "Error in GenericSpamAnalyzerJob: #{e.message}"
           end
         end

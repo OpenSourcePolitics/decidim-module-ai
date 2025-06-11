@@ -17,6 +17,8 @@ module Decidim
             res = third_party_request(content, organization_host, klass)
             body = JSON.parse(res.body)
 
+            # TODO: Handle activator request timeout response
+
             system_log("Received response from third party service: #{body}")
             raise InvalidEntity, body unless res.is_a? Net::HTTPSuccess
 
