@@ -5,9 +5,15 @@ module Decidim
     module SpamDetection
       module Strategy
         class ThirdParty < Base
-          class InvalidOutputFormat < StandardError; end
+          class ThirdPartyError < StandardError; end
 
-          class InvalidEntity < StandardError; end
+          class InvalidOutputFormat < ThirdPartyError; end
+
+          class InvalidEntity < ThirdPartyError; end
+
+          class Forbidden < ThirdPartyError; end
+
+          class TimeoutError < ThirdPartyError; end
 
           OUTPUT = %w(SPAM NOT_SPAM).freeze
 

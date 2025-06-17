@@ -13,31 +13,27 @@ module Decidim
           # @param klass [String] Stringified klass of reportable
           # @return Integer
           def classify(content, organization_host, klass)
-            system_log("Starting classification with Scaleway's strategy...")
+            system_log("classify - Classifying content with Scaleway's strategy...")
             res = third_party_request(content, organization_host, klass)
-            body = JSON.parse(res.body)
+            body = parse_http_response(res)
 
-            # TODO: Handle activator request timeout response
-
-            system_log("Received response from third party service: #{body}")
-            raise InvalidEntity, body unless res.is_a? Net::HTTPSuccess
-
+            system_log("classify - HTTP response body : #{body}")
             content = third_party_content(body)
-            raise InvalidOutputFormat, "Third party service response isn't valid JSON" unless valid_output_format?(content)
+
+            raise InvalidOutputFormat, "Unexpected value received : '#{content}'. Expected to be in #{OUTPUT}" unless valid_output_format?(content)
 
             @category = content.downcase
             score
-          rescue InvalidEntity, InvalidOutputFormat => e
-            system_log(e.message, level: :error)
-            score
+          rescue ThirdPartyError => e
+            system_log("classify - Error: #{e.message}", level: :error)
+            raise e
           end
 
           def third_party_request(content, organization_host, klass)
-            # TODO: Prevent undefined endpoint
             uri = URI(@endpoint)
 
             payload = payload(content, klass).to_json
-            system_log("Sending request to third party service: #{payload}")
+            system_log("third_party_request - HTTP Request payload: #{payload}")
             http = Net::HTTP.new(uri.host, uri.port)
             http.use_ssl = true
             request = Net::HTTP::Post.new(uri.to_s, "Content-Type" => "application/json", "Accept" => "application/json")
@@ -51,8 +47,24 @@ module Decidim
 
             http.request(request)
           rescue StandardError => e
-            system_log("Error during request to Scaleway service: #{e.message}", level: :error)
-            { "error" => "Error during request to third party service" }
+            system_log("third_party_request - Error: #{e.message}", level: :error)
+            system_log("third_party_request - HTTP : (url/#{@endpoint}) (Host/#{organization_host})", level: :error)
+            raise ThirdPartyError, "Error during request to third party service: #{e.message}"
+          end
+
+          def parse_http_response(response)
+            case response
+            when Net::HTTPSuccess
+              JSON.parse(response.body)
+            when Net::HTTPForbidden
+              raise Forbidden, "Access forbidden to the third party service. Check your API key or permissions."
+            when Net::HTTPRequestTimeout
+              raise TimeoutError, response.body || "Request timed out"
+            when Net::HTTPServiceUnavailable
+              raise InvalidEntity, response.body || "Service unavailable"
+            else
+              raise InvalidEntity, "Received unexpected response from third party service: #{response.body}"
+            end
           end
 
           def third_party_content(body)
