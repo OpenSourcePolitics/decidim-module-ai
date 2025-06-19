@@ -7,11 +7,11 @@ module Decidim
         class GenericSpamAnalyzerJob < Decidim::Ai::SpamDetection::GenericSpamAnalyzerJob
           def perform(reportable, author, locale, fields)
             @author = author
-            organization_host = reportable.organization.host
+            @organization = reportable.organization
             klass = reportable.class.to_s
             overall_score = I18n.with_locale(locale) do
               fields.map do |field|
-                classifier.classify(translated_attribute(reportable.send(field)), organization_host, klass)
+                classifier.classify(translated_attribute(reportable.send(field)), @organization.host, klass)
                 classifier.score
               end
             end
