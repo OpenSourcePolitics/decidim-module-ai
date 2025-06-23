@@ -58,7 +58,7 @@ module Decidim
               JSON.parse(response.body)
             when Net::HTTPForbidden
               raise Forbidden, "Access forbidden to the third party service. Check your API key or permissions."
-            when Net::HTTPRequestTimeout
+            when Net::HTTPRequestTimeout, Net::HTTPGatewayTimeout
               raise TimeoutError, response.body || "Request timed out"
             when Net::HTTPServiceUnavailable
               raise InvalidEntity, response.body || "Service unavailable"
