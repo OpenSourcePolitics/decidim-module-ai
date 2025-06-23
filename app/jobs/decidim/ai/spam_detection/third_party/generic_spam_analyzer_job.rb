@@ -10,20 +10,25 @@ module Decidim
             @organization = reportable.organization
             klass = reportable.class.to_s
             overall_score = I18n.with_locale(locale) do
-              fields.map do |field|
-                classifier.classify(translated_attribute(reportable.send(field)), @organization.host, klass)
-                classifier.score
+              contents = fields.map do |field|
+                content = translated_attribute(reportable.send(field))
+                if content.present?
+                  "### #{field}:\n#{content}"
+                else
+                  ""
+                end
               end
-            end
 
-            overall_score = overall_score.inject(0.0, :+) / overall_score.size
+              classifier.classify(contents.join("\n"), @organization.host, klass)
+              classifier.score
+            end
 
             return unless overall_score >= Decidim::Ai::SpamDetection.resource_score_threshold
 
             Decidim::CreateReport.call(form, reportable)
           rescue StandardError => e
+            Rails.logger.error "Decidim::Ai::SpamDetection::ThirdParty::GenericSpamAnalyzerJob> Error spam_analysis: #{e.message}"
             Rails.logger.error e.backtrace.first(15).join("\n")
-            Rails.logger.error "Error in GenericSpamAnalyzerJob: #{e.message}"
           end
         end
       end
