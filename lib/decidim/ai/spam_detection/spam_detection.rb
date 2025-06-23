@@ -6,6 +6,7 @@ module Decidim
       include ActiveSupport::Configurable
 
       autoload :Service, "decidim/ai/spam_detection/service"
+      autoload :ThirdPartyService, "decidim/ai/spam_detection/third_party_service"
 
       module Resource
         autoload :Base, "decidim/ai/spam_detection/resource/base"
@@ -26,6 +27,8 @@ module Decidim
       module Strategy
         autoload :Base, "decidim/ai/spam_detection/strategy/base"
         autoload :Bayes, "decidim/ai/spam_detection/strategy/bayes"
+        autoload :ThirdParty, "decidim/ai/spam_detection/strategy/third_party"
+        autoload :Scaleway, "decidim/ai/spam_detection/strategy/scaleway"
       end
 
       # This is the email address used by the spam engine to
@@ -150,6 +153,16 @@ module Decidim
       # If you want to use a different spam detection service, you can use a class service having the following contract
       config_accessor :user_detection_service do
         "Decidim::Ai::SpamDetection::Service"
+      end
+
+      # User spam analyzer job class.
+      config_accessor :user_spam_analyzer_job do
+        "Decidim::Ai::SpamDetection::UserSpamAnalyzerJob"
+      end
+
+      # User spam analyzer job class.
+      config_accessor :generic_spam_analyzer_job do
+        "Decidim::Ai::SpamDetection::GenericSpamAnalyzerJob"
       end
 
       # this is the generic resource classifier class. If you need to change your own class, please change the
