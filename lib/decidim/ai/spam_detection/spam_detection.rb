@@ -152,6 +152,16 @@ module Decidim
         "Decidim::Ai::SpamDetection::Service"
       end
 
+      # User spam analyzer job class.
+      config_accessor :user_spam_analyzer_job do
+        "Decidim::Ai::SpamDetection::UserSpamAnalyzerJob"
+      end
+
+      # User spam analyzer job class.
+      config_accessor :generic_spam_analyzer_job do
+        "Decidim::Ai::SpamDetection::GenericSpamAnalyzerJob"
+      end
+
       # this is the generic resource classifier class. If you need to change your own class, please change the
       # configuration of `Decidim::Ai::SpamDetection.detection_service` variable.
       def self.resource_classifier
