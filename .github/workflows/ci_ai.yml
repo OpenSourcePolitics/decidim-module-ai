@@ -6,6 +6,7 @@ on:
       - main
       - release/*
       - "*-stable"
+      - "*bump*"
   pull_request:
     branches-ignore:
       - "chore/l10n*"
