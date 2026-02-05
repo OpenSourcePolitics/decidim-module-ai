@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
     "homepage_uri" => "https://decidim.org",
     "source_code_uri" => "https://github.com/decidim/decidim"
   }
-  s.required_ruby_version = "~> 3.2.0"
+  s.required_ruby_version = "~> 3.3.4"
 
   s.name = "decidim-ai"
   s.summary = "A Decidim module with AI tools"
@@ -26,5 +26,5 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib,vendor}/**/*", "Rakefile", "README.md"]
 
   s.add_dependency "classifier-reborn", "~> 2.3.0"
-  s.add_dependency "decidim-core", "~> 0.29.0"
+  s.add_dependency "decidim-core", "~> 0.31.0"
 end

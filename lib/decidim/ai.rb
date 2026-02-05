@@ -10,8 +10,6 @@ module Decidim
 
     module Overrides
       autoload :UpdateAccount, "decidim/ai/overrides/update_account"
-      autoload :UpdateUserGroup, "decidim/ai/overrides/update_user_group"
-      autoload :CreateUserGroup, "decidim/ai/overrides/create_user_group"
     end
 
     include ActiveSupport::Configurable

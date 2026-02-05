@@ -3,7 +3,7 @@
 module Decidim
   module Ai
     def self.version
-      "0.29.2"
+      "0.31.0"
     end
   end
 end

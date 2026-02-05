@@ -39,6 +39,28 @@ shared_examples "content submitted to spam analysis" do
       expect(Decidim::Report.count).to eq(spam_count)
     end
   end
+
+  it "hides automatically the resource" do
+    allow(Decidim::Ai::SpamDetection).to receive(:hide_reported_resources_automatically).and_return(true)
+    perform_enqueued_jobs do
+      expect { command.call }.to change(Decidim::Report, :count).by(spam_count)
+      expect(Decidim::Report.count).to eq(spam_count)
+      # We are reusing the spec for Valid and invalid content. We are just checking that the resource is hidden if the
+      # resource is spam
+      expect(resource.last.hidden?).to eq(spam_count == 1)
+    end
+  end
+
+  it "keps the resource visible" do
+    allow(Decidim::Ai::SpamDetection).to receive(:hide_reported_resources_automatically).and_return(false)
+    perform_enqueued_jobs do
+      expect { command.call }.to change(Decidim::Report, :count).by(spam_count)
+      expect(Decidim::Report.count).to eq(spam_count)
+      # We are reusing the spec for Valid and invalid content. We are just checking that the resource is not hidden if the
+      # setting is set to not hide spam content
+      expect(resource.last.hidden?).to be(false)
+    end
+  end
 end
 
 shared_examples "initiatives spam analysis" do
@@ -52,7 +74,7 @@ shared_examples "initiatives spam analysis" do
       let(:compared_against) { description }
       let(:resource) { Decidim::Initiative }
       let(:component) { nil }
-      let!(:participatory_space) { initiative }
+      let(:participatory_space) { initiative }
     end
   end
 
@@ -73,8 +95,9 @@ end
 
 shared_examples "debates spam analysis" do
   let(:manifest_name) { "debates" }
-  let(:scope) { create(:scope, organization:) }
-  let(:category) { create(:category, participatory_space:) }
+  let(:taxonomizations) do
+    2.times.map { build(:taxonomization, taxonomy: create(:taxonomy, :with_parent, organization:), taxonomizable: nil) }
+  end
 
   context "when spam content is added" do
     let(:description) { "Claim your prize today so you can win." }
@@ -131,8 +154,9 @@ end
 
 shared_examples "meetings spam analysis" do
   let(:manifest_name) { "meetings" }
-  let(:scope) { create(:scope, organization:) }
-  let(:category) { create(:category, participatory_space:) }
+  let(:taxonomizations) do
+    2.times.map { build(:taxonomization, taxonomy: create(:taxonomy, :with_parent, organization:), taxonomizable: nil) }
+  end
 
   context "when spam content is added" do
     let(:description) { "Claim your prize today so you can win." }
@@ -161,7 +185,6 @@ end
 
 shared_examples "proposal spam analysis" do
   let(:manifest_name) { "proposals" }
-  let(:user_group) { nil }
 
   context "when spam content is added" do
     let(:body) { "Claim your prize today so you can win." }
@@ -189,8 +212,6 @@ shared_examples "proposal spam analysis" do
 end
 
 shared_examples "Collaborative draft spam analysis" do
-  let(:user_group) { nil }
-
   context "when spam content is added" do
     let(:body) { "Claim your prize today so you can win." }
     let(:title) { "You are the Lucky winner" }
