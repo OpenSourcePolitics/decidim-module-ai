@@ -11,9 +11,7 @@ describe "User updates collaborative draft", type: :system do
       has_address: false,
       latitude: 40.1234,
       longitude: 2.1234,
-      add_documents: nil,
-      user_group_id: user_group.try(:id),
-      suggested_hashtags: []
+      add_documents: nil
     ).with_context(
       current_user: author,
       current_organization: organization,

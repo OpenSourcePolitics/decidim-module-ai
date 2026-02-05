@@ -7,7 +7,7 @@ describe "User updates meeting", type: :system do
     Decidim::Debates::DebateForm.from_params(
       title:,
       description:,
-      # taxonomizations:,
+      taxonomizations:,
       id: debate.id
     ).with_context(
       current_organization: organization,
