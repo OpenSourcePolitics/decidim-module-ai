@@ -16,6 +16,8 @@ gem "decidim-proposals", "~> 0.31"
 gem "bootsnap", "~> 1.4"
 gem "puma", ">= 6.3"
 
+gem "uri", "1.0.3"
+
 group :development, :test do
   gem "byebug", "~> 11.0", platform: :mri
 

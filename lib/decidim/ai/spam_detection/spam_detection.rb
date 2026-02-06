@@ -6,6 +6,7 @@ module Decidim
       include ActiveSupport::Configurable
 
       autoload :Service, "decidim/ai/spam_detection/service"
+      autoload :ThirdPartyService, "decidim/ai/spam_detection/third_party_service"
 
       module Resource
         autoload :Base, "decidim/ai/spam_detection/resource/base"
@@ -26,6 +27,8 @@ module Decidim
       module Strategy
         autoload :Base, "decidim/ai/spam_detection/strategy/base"
         autoload :Bayes, "decidim/ai/spam_detection/strategy/bayes"
+        autoload :ThirdParty, "decidim/ai/spam_detection/strategy/third_party"
+        autoload :Scaleway, "decidim/ai/spam_detection/strategy/scaleway"
       end
 
       # When the engine is consistently marking spam content without errors,
