@@ -38,6 +38,12 @@ Add the queue name to `config/sidekiq.yml` file:
 # The other yaml entries
 ```
 
+## Configure third-party service
+
+Documentations and examples are available at :
+- [Examples](./examples/)
+- [Docs](./docs/)
+
 ## Contributing
 
 See [Decidim](https://github.com/decidim/decidim).
