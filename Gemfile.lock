@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    decidim-ai (0.31.0)
+    decidim-ai (0.31.2)
       classifier-reborn (~> 2.3.0)
       decidim-core (~> 0.31.0)
 
