@@ -21,7 +21,7 @@ gem "uri", "1.0.3"
 group :development, :test do
   gem "byebug", "~> 11.0", platform: :mri
 
-  gem "faker"
+  gem "faker", "~> 3.5"
 
   gem "decidim-dev", "~> 0.31"
 
