@@ -19,8 +19,8 @@ module Decidim
 
           def initialize(options = {})
             super
-            @endpoint = Rails.application.secrets.dig(:decidim, :ai, :endpoint)
-            @secret = Rails.application.secrets.dig(:decidim, :ai, :secret)
+            @endpoint = options[:endpoint] || Decidim::Env.new("DECIDIM_AI_ENDPOINT").to_s
+            @secret = options[:secret] || Decidim::Env.new("DECIDIM_AI_SECRET").to_s
             @options = options
           end
 
@@ -31,6 +31,7 @@ module Decidim
           end
 
           def classify(content)
+            @category = nil
             system_log("Starting classification...")
             res = third_party_request(content)
             body = res.body

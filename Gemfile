@@ -6,22 +6,24 @@ ruby RUBY_VERSION
 
 gem "concurrent-ruby", "= 1.3.4"
 
-gem "decidim", "~> 0.29"
+gem "decidim", "~> 0.31"
 gem "decidim-ai", path: "."
-gem "decidim-debates", "~> 0.29"
-gem "decidim-initiatives", "~> 0.29"
-gem "decidim-meetings", "~> 0.29"
-gem "decidim-proposals", "~> 0.29"
+gem "decidim-debates", "~> 0.31"
+gem "decidim-initiatives", "~> 0.31"
+gem "decidim-meetings", "~> 0.31"
+gem "decidim-proposals", "~> 0.31"
 
 gem "bootsnap", "~> 1.4"
 gem "puma", ">= 6.3"
+
 gem "uri", "1.0.3"
+
 group :development, :test do
   gem "byebug", "~> 11.0", platform: :mri
 
-  gem "faker"
+  gem "faker", "~> 3.5"
 
-  gem "decidim-dev", "~> 0.29"
+  gem "decidim-dev", "~> 0.31"
 
   gem "rubocop-performance"
   gem "simplecov", require: false

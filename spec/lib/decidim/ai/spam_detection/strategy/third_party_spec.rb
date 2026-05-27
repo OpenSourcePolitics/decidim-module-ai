@@ -65,11 +65,10 @@ describe Decidim::Ai::SpamDetection::Strategy::ThirdParty do
   end
 
   describe "#classify" do
-    let(:response_double) { double("Net::HTTPResponse", body: '{"category": "NOT_SPAM"}', is_a?: true) }
+    let(:response_double) { double("Net::HTTPResponse", body: '{"choices": [{"message": {"content": "NOT_SPAM"}}]}', is_a?: true) }
 
     before do
-      allow(strategy).to receive(:request).and_return(response_double)
-      allow(strategy).to receive(:third_party_content).and_return("NOT_SPAM")
+      allow(strategy).to receive(:third_party_request).and_return(response_double)
     end
 
     it "classifies content as not spam" do
@@ -83,17 +82,20 @@ describe Decidim::Ai::SpamDetection::Strategy::ThirdParty do
       end
 
       it "raises InvalidEntity error" do
-        expect { strategy.classify(content) }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidEntity)
-        expect(strategy.instance_variable_get(:@score)).to eq(0)
+        expect { strategy.classify(content) }.not_to raise_error
+        expect(strategy.score).to eq(0)
       end
     end
 
     context "when response format is invalid" do
-      before { allow(strategy).to receive(:valid_output_format?).and_return(false) }
+      before do
+        allow(response_double).to receive(:is_a?).with(Net::HTTPSuccess).and_return(true)
+        allow(strategy).to receive(:third_party_content).and_return("INVALID_FORMAT")
+      end
 
       it "raises InvalidOutputFormat error" do
-        expect { strategy.classify(content) }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidOutputFormat)
-        expect(strategy.instance_variable_get(:@score)).to eq(0)
+        expect { strategy.classify(content) }.not_to raise_error
+        expect(strategy.score).to eq(0)
       end
     end
   end

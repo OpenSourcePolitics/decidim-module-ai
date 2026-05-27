@@ -15,7 +15,7 @@ Outputs expected are JSON objects with the following structure:
   "SPAM": "SPAM"
 }
 ```
-or 
+or
 ```json
 {
   "SPAM": "NOT_SPAM"
@@ -72,5 +72,4 @@ decidim:
     endpoint: <%= Decidim::Env.new("DECIDIM_AI_ENDPOINT").to_s %>
     secret: <%= Decidim::Env.new("DECIDIM_AI_SECRET").to_s %>
 ```
-
 You can now run your server and start using the Scaleway AI service for spam detection !

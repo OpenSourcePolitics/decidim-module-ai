@@ -18,14 +18,8 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
     context "when body contains valid JSON with choices" do
       let(:body) do
         {
-          "choices" => [
-            {
-              "message" => {
-                "content" => "SPAM"
-              }
-            }
-          ]
-        }.to_json
+          "spam" => "SPAM"
+        }
       end
 
       it "returns the content of the first choice" do
@@ -35,13 +29,11 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
 
     context "when body contains valid JSON without choices" do
       let(:body) do
-        {
-          "choices" => []
-        }.to_json
+        {}
       end
 
-      it "returns nil" do
-        expect(strategy.third_party_content(body)).to be_nil
+      it "returns empty string" do
+        expect(strategy.third_party_content(body)).to eq("")
       end
     end
 
@@ -56,23 +48,24 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
     context "when body is empty" do
       let(:body) { "" }
 
-      it "returns nil" do
+      it "returns empty string" do
         expect(strategy.third_party_content(body)).to be_empty
       end
     end
   end
 
   describe "#classify" do
-    let(:response_double) { double(Net::HTTPResponse, body: '{"choices": [{"message": {"spam": "NOT_SPAM"}}]}', is_a?: true, error: "Error message") }
-    let(:uri_double) { double(URI, host: "example.com", port: 443, path: "/api", method: :POST) }
-    let(:http_double) { double(Net::HTTP, :use_ssl= => true) }
+    let(:http_response_body) { '{"spam": "NOT_SPAM"}' }
+    let(:http_response_double) do
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(response).to receive(:body).and_return(http_response_body)
+      response
+    end
+    let(:http_double) { instance_double(Net::HTTP, :use_ssl= => true) }
 
     before do
-      allow(URI).to receive(:parse).and_return(uri_double)
       allow(Net::HTTP).to receive(:new).and_return(http_double)
-      allow(http_double).to receive(:post).and_return(double(Net::HTTPResponse, code: Net::HTTPSuccess, body: '{"choices": [{"message": {"spam": "NOT_SPAM"}}]}'))
-      allow(http_double).to receive(:headers=).and_return({ "Accept" => "application/json", "Content-Type" => "application/json", "Decidim" => "decidim.example.org", "Host" => "decidim.example.org", "X-Auth-Token" => "secret_key" })
-      allow(strategy).to receive(:request).and_return(response_double)
+      allow(http_double).to receive(:request).and_return(http_response_double)
     end
 
     it "classifies content as not spam" do
@@ -80,23 +73,22 @@ RSpec.describe Decidim::Ai::SpamDetection::Strategy::Scaleway do
     end
 
     context "when response is invalid" do
-      before do
-        allow(response_double).to receive(:is_a?).with(Net::HTTPSuccess).and_return(false)
-        allow(response_double).to receive(:error).and_return("Error message")
+      let(:http_response_double) do
+        response = Net::HTTPBadRequest.new("1.1", "400", "Bad Request")
+        allow(response).to receive(:body).and_return("Error")
+        response
       end
 
       it "raises InvalidEntity error" do
-        expect { strategy.classify("Test content", "decidim.example.org", klass) }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidEntity)
-        expect(strategy.instance_variable_get(:@score)).to eq(0)
+        expect { strategy.classify("Test content", "decidim.example.org", klass) }.to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidEntity)
       end
     end
 
     context "when response format is invalid" do
-      before { allow(strategy).to receive(:valid_output_format?).and_return(false) }
+      let(:http_response_body) { '{"spam": "INVALID_FORMAT"}' }
 
       it "raises InvalidOutputFormat error" do
-        expect { strategy.classify("Test content", "decidim.example.org", klass) }.not_to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidOutputFormat)
-        expect(strategy.instance_variable_get(:@score)).to eq(0)
+        expect { strategy.classify("Test content", "decidim.example.org", klass) }.to raise_error(Decidim::Ai::SpamDetection::Strategy::ThirdParty::InvalidOutputFormat)
       end
     end
   end

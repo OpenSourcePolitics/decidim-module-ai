@@ -31,10 +31,16 @@ module Decidim
         autoload :Scaleway, "decidim/ai/spam_detection/strategy/scaleway"
       end
 
+      # When the engine is consistently marking spam content without errors,
+      # you can skip human intervention by enabling this functionality
+      config_accessor :hide_reported_resources_automatically do
+        Decidim::Env.new("DECIDIM_SPAM_HIDE_REPORTED_RESOURCES_AUTOMATICALLY", false).present?
+      end
+
       # This is the email address used by the spam engine to
       # properly identify the user that will report users and content
       config_accessor :reporting_user_email do
-        "decidim-reporting-user@example.org"
+        Decidim::Env.new("DECIDIM_SPAM_REPORTING_USER", "decidim-reporting-user@example.org").value
       end
 
       # You can configure the spam threshold for the spam detection service.
@@ -42,7 +48,13 @@ module Decidim
       # The default value is 0.75
       # Any value below the threshold will be considered spam.
       config_accessor :resource_score_threshold do
-        0.75
+        Decidim::Env.new("DECIDIM_SPAM_DETECTION_RESOURCE_SCORE_THRESHOLD", 0.75).to_f
+      end
+
+      # You can configure the spam delay for the spam detection service.
+      # The default value is 30 seconds
+      config_accessor :spam_detection_delay do
+        Decidim::Env.new("DECIDIM_SPAM_DETECTION_DELAY_IN_SECONDS", 30).to_i.seconds
       end
 
       # Registered analyzers.
@@ -95,7 +107,7 @@ module Decidim
       # Spam detection service class.
       # If you want to use a different spam detection service, you can use a class service having the following contract
       config_accessor :resource_detection_service do
-        "Decidim::Ai::SpamDetection::Service"
+        Decidim::Env.new("DECIDIM_SPAM_DETECTION_RESOURCE_SERVICE", "Decidim::Ai::SpamDetection::Service").value
       end
 
       # You can configure the spam threshold for the spam detection service.
@@ -103,7 +115,7 @@ module Decidim
       # The default value is 0.75
       # Any value below the threshold will be considered spam.
       config_accessor :user_score_threshold do
-        0.75
+        Decidim::Env.new("DECIDIM_SPAM_DETECTION_USER_SCORE_THRESHOLD", 0.75).to_f
       end
 
       # Registered analyzers.
@@ -138,21 +150,26 @@ module Decidim
 
       # This config_accessor allows the implementers to change the class being used by the classifier,
       # in order to change the finder method or what a hidden user really is.
-      # The same applies for UserGroups.
       config_accessor :user_models do
-        @user_models ||= begin
-          user_models = {}
-
-          user_models["Decidim::UserGroup"] = "Decidim::Ai::SpamDetection::Resource::UserBaseEntity"
-          user_models["Decidim::User"] = "Decidim::Ai::SpamDetection::Resource::UserBaseEntity"
-          user_models
-        end
+        {
+          "Decidim::User" => "Decidim::Ai::SpamDetection::Resource::UserBaseEntity"
+        }
       end
 
       # Spam detection service class.
       # If you want to use a different spam detection service, you can use a class service having the following contract
       config_accessor :user_detection_service do
-        "Decidim::Ai::SpamDetection::Service"
+        Decidim::Env.new("DECIDIM_SPAM_DETECTION_USER_SERVICE", "Decidim::Ai::SpamDetection::Service").value
+      end
+
+      # User spam analyzer job class.
+      config_accessor :user_spam_analyzer_job do
+        "Decidim::Ai::SpamDetection::UserSpamAnalyzerJob"
+      end
+
+      # User spam analyzer job class.
+      config_accessor :generic_spam_analyzer_job do
+        "Decidim::Ai::SpamDetection::GenericSpamAnalyzerJob"
       end
 
       # User spam analyzer job class.

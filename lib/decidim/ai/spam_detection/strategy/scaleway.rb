@@ -13,6 +13,7 @@ module Decidim
           # @param klass [String] Stringified klass of reportable
           # @return Integer
           def classify(content, organization_host, klass)
+            @category = nil
             system_log("classify - Classifying content with Scaleway's strategy...")
             res = third_party_request(content, organization_host, klass)
             body = parse_http_response(res)
@@ -70,7 +71,18 @@ module Decidim
           def third_party_content(body)
             return "" if body.blank?
 
-            body.fetch("spam", "")
+            parsed = body.is_a?(String) ? JSON.parse(body) : body
+            parsed.fetch("spam", "")
+          end
+
+          def headers(organization_host)
+            {
+              "X-Auth-Token" => @secret,
+              "Content-Type" => "application/json",
+              "Accept" => "application/json",
+              "Host" => organization_host,
+              "Decidim" => organization_host
+            }
           end
 
           def payload(content, klass)
